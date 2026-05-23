@@ -1,0 +1,235 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1.0">
+  <title>Sun Wind Cloud</title>
+  <style>
+    * { box-sizing: border-box; margin: 0; padding: 0; }
+
+    body {
+      font-family: 'Segoe UI', sans-serif;
+      background: #1a1a2e;
+      color: #eee;
+      min-height: 100vh;
+      display: flex;
+      flex-direction: column;
+      align-items: center;
+      justify-content: center;
+      gap: 2rem;
+    }
+
+    h1 {
+      font-size: 2rem;
+      letter-spacing: 2px;
+      color: #e94560;
+    }
+
+    .scoreboard {
+      display: flex;
+      gap: 3rem;
+      background: #16213e;
+      padding: 1rem 2.5rem;
+      border-radius: 12px;
+      font-size: 1.1rem;
+    }
+
+    .score-item { text-align: center; }
+    .score-item span { display: block; font-size: 2rem; font-weight: bold; color: #e94560; }
+
+    .arena {
+      display: flex;
+      align-items: center;
+      gap: 3rem;
+    }
+
+    .side { text-align: center; width: 140px; }
+    .side p { margin-bottom: 0.5rem; font-size: 0.9rem; color: #aaa; text-transform: uppercase; letter-spacing: 1px; }
+
+    .choice-display {
+      font-size: 5rem;
+      height: 110px;
+      display: flex;
+      align-items: center;
+      justify-content: center;
+      background: #16213e;
+      border-radius: 16px;
+      border: 2px solid #0f3460;
+      transition: transform 0.15s;
+    }
+
+    .choice-display.shake {
+      animation: shake 0.4s ease;
+    }
+
+    @keyframes shake {
+      0%,100% { transform: translateX(0); }
+      25% { transform: translateX(-8px) rotate(-5deg); }
+      75% { transform: translateX(8px) rotate(5deg); }
+    }
+
+    .vs { font-size: 1.5rem; font-weight: bold; color: #555; }
+
+    .result {
+      font-size: 1.6rem;
+      font-weight: bold;
+      height: 2.2rem;
+      transition: opacity 0.3s;
+    }
+
+    .result.win  { color: #4caf50; }
+    .result.lose { color: #e94560; }
+    .result.draw { color: #ffc107; }
+
+    .buttons {
+      display: flex;
+      gap: 1.2rem;
+    }
+
+    .btn {
+      font-size: 2.5rem;
+      background: #16213e;
+      border: 2px solid #0f3460;
+      border-radius: 14px;
+      padding: 0.6rem 1rem;
+      cursor: pointer;
+      transition: transform 0.1s, border-color 0.2s, box-shadow 0.2s;
+      user-select: none;
+    }
+
+    .btn:hover {
+      border-color: #e94560;
+      box-shadow: 0 0 12px #e9456055;
+      transform: scale(1.1);
+    }
+
+    .btn:active { transform: scale(0.95); }
+
+    .btn-label {
+      display: block;
+      font-size: 0.65rem;
+      color: #aaa;
+      text-align: center;
+      margin-top: 4px;
+      letter-spacing: 1px;
+      text-transform: uppercase;
+    }
+
+    .reset {
+      background: none;
+      border: 1px solid #444;
+      color: #888;
+      padding: 0.4rem 1.2rem;
+      border-radius: 8px;
+      cursor: pointer;
+      font-size: 0.85rem;
+      transition: color 0.2s, border-color 0.2s;
+    }
+
+    .reset:hover { color: #e94560; border-color: #e94560; }
+  </style>
+</head>
+<body>
+
+  <h1>Sun Wind Cloud</h1>
+
+  <div class="scoreboard">
+    <div class="score-item">You<span id="player-score">0</span></div>
+    <div class="score-item">Ties<span id="draw-score">0</span></div>
+    <div class="score-item">CPU<span id="cpu-score">0</span></div>
+  </div>
+
+  <div class="arena">
+    <div class="side">
+      <p>You</p>
+      <div class="choice-display" id="player-display">🤔</div>
+    </div>
+    <div class="vs">VS</div>
+    <div class="side">
+      <p>CPU</p>
+      <div class="choice-display" id="cpu-display">🤔</div>
+    </div>
+  </div>
+
+  <div class="result" id="result">Choose your move!</div>
+
+  <div class="buttons">
+    <div>
+      <button class="btn" onclick="play('sun')">☀️</button>
+      <span class="btn-label">Sun</span>
+    </div>
+    <div>
+      <button class="btn" onclick="play('wind')">💨</button>
+      <span class="btn-label">Wind</span>
+    </div>
+    <div>
+      <button class="btn" onclick="play('cloud')">☁️</button>
+      <span class="btn-label">Cloud</span>
+    </div>
+  </div>
+
+  <button class="reset" onclick="resetScores()">Reset Scores</button>
+
+  <script>
+    const emojis = { sun: '☀️', wind: '💨', cloud: '☁️' };
+    const choices = ['sun', 'wind', 'cloud'];
+    const beats = { sun: 'wind', wind: 'cloud', cloud: 'sun' };
+
+    let scores = { player: 0, cpu: 0, draw: 0 };
+
+    function play(playerChoice) {
+      const cpuChoice = choices[Math.floor(Math.random() * 3)];
+
+      const playerEl = document.getElementById('player-display');
+      const cpuEl    = document.getElementById('cpu-display');
+      const resultEl = document.getElementById('result');
+
+      playerEl.classList.remove('shake');
+      cpuEl.classList.remove('shake');
+      void playerEl.offsetWidth;
+      playerEl.classList.add('shake');
+      cpuEl.classList.add('shake');
+
+      playerEl.textContent = emojis[playerChoice];
+      cpuEl.textContent    = emojis[cpuChoice];
+
+      resultEl.className = 'result';
+      resultEl.textContent = '';
+
+      let outcome, cls;
+      if (playerChoice === cpuChoice) {
+        outcome = "It's a draw!";
+        cls = 'draw';
+        scores.draw++;
+      } else if (beats[playerChoice] === cpuChoice) {
+        outcome = 'You win!';
+        cls = 'win';
+        scores.player++;
+      } else {
+        outcome = 'CPU wins!';
+        cls = 'lose';
+        scores.cpu++;
+      }
+
+      setTimeout(() => {
+        resultEl.textContent = outcome;
+        resultEl.classList.add(cls);
+        document.getElementById('player-score').textContent = scores.player;
+        document.getElementById('cpu-score').textContent    = scores.cpu;
+        document.getElementById('draw-score').textContent   = scores.draw;
+      }, 420);
+    }
+
+    function resetScores() {
+      scores = { player: 0, cpu: 0, draw: 0 };
+      document.getElementById('player-score').textContent = 0;
+      document.getElementById('cpu-score').textContent    = 0;
+      document.getElementById('draw-score').textContent   = 0;
+      document.getElementById('player-display').textContent = '🤔';
+      document.getElementById('cpu-display').textContent    = '🤔';
+      document.getElementById('result').className = 'result';
+      document.getElementById('result').textContent = 'Choose your move!';
+    }
+  </script>
+</body>
+</html>
